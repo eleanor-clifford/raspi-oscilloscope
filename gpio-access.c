@@ -88,7 +88,7 @@ int main(int argc, char **argv)
 	
 	printf("sps=%.1f",(double)8338608/(end-start));
 
-	for (rep=0,rep<8388608; rep++)
+	for (rep=0; rep<8388608; rep++)
 	{
 		printf("%d\n",data[rep]);
 	}
