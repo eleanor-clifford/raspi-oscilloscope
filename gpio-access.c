@@ -90,7 +90,7 @@ int main(int argc, char **argv)
 
 	for (rep=0; rep<8388608; rep++)
 	{
-		printf("%d\n",data[rep]);
+		printf("%x\n",data[rep]);
 	}
 } // main
 
