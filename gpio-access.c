@@ -77,7 +77,7 @@ int main(int argc, char **argv)
 
 	gettimeofday(&tv, 0);
 	start = (double)tv.tv_sec + ((double)tv.tv_usec / 1E6);
-	uint16_t *data = malloc(10000*sizeof(uint16_t));
+	u_int16_t *data = malloc(10000*sizeof(u_int16_t));
 	for (rep=0; rep<10000; rep++)
 	{
 		data[rep] = GET_GPIO_ALL;
