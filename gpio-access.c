@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 	}
 
 	gettimeofday(&tv, 0);
-	start = (double)tv.tv_sec + ((double)tv.tv_usec / 1E6);
+	end = (double)tv.tv_sec + ((double)tv.tv_usec / 1E6);
 	
 	printf("sps=%.1f",(double)10000/(end-start));
 
