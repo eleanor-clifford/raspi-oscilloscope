@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 	for (rep=0; rep<8388608; rep++)
 	{
 		raw_data = GET_GPIO_ALL;
-		data[rep] = ((raw_data >> 4) & 56) | ((raw_data >> 2) & 7);
+		data[rep] = ((raw_data >> 4) & 248) | ((raw_data >> 2) & 7);
 	}
 
 	gettimeofday(&tv, 0);
