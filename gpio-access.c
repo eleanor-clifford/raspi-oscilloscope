@@ -55,7 +55,6 @@ void setup_io();
 int main(int argc, char **argv)
 {
 	int g,rep;
-	double start,end;
 
 	// Set up gpi pointer for direct register access
 	setup_io();
