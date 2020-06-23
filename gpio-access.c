@@ -77,8 +77,8 @@ int main(int argc, char **argv)
 
 	gettimeofday(&tv, 0);
 	start = (double)tv.tv_sec + ((double)tv.tv_usec / 1E6);
-	u_int16_t *data = malloc(10000*sizeof(u_int16_t));
-	for (rep=0; rep<10000; rep++)
+	u_int16_t *data = malloc(8388608*sizeof(u_int16_t)); / 256 MiB
+	for (rep=0; rep<8388608; rep++)
 	{
 		data[rep] = GET_GPIO_ALL;
 	}
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 	gettimeofday(&tv, 0);
 	end = (double)tv.tv_sec + ((double)tv.tv_usec / 1E6);
 	
-	printf("sps=%.1f",(double)10000/(end-start));
+	printf("sps=%.1f",(double)8338608/(end-start));
 
 	return 0;
 
