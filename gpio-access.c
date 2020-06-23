@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #define PAGE_SIZE (4*1024)
@@ -53,34 +54,42 @@ void setup_io();
 
 int main(int argc, char **argv)
 {
-    int g,rep;
-    double start,end;
+	int g,rep;
+	double start,end;
 
-    // Set up gpi pointer for direct register access
-    setup_io();
+	// Set up gpi pointer for direct register access
+	setup_io();
 
-    // Switch GPIO 7..11 to output mode
+	// Switch GPIO 7..11 to output mode
 
-    /************************************************************************\
-     * You are about to change the GPIO settings of your computer.          *
-     * Mess this up and it will stop working!                               *
-     * It might be a good idea to 'sync' before running this program        *
-     * so at least you still have your code changes written to the SD-card! *
-    \************************************************************************/
+	/************************************************************************\
+	 * You are about to change the GPIO settings of your computer.          *
+	 * Mess this up and it will stop working!                               *
+	 * It might be a good idea to 'sync' before running this program        *
+	 * so at least you still have your code changes written to the SD-card! *
+	\************************************************************************/
 
-    // Set GPIO pins 2,3,4,7,8,9,10,11 to output
-    for (g=2; g<= 4; g++) INP_GPIO(g);
-    for (g=7; g<=11; g++) INP_GPIO(g);
+	// Set GPIO pins 2,3,4,7,8,9,10,11 to output
+	for (g=2; g<= 4; g++) INP_GPIO(g);
+	for (g=7; g<=11; g++) INP_GPIO(g);
 
-    start = time_time();
-    for (rep=0; rep<10000; rep++)
-    {
-        int data = GET_GPIO_ALL;
-    }
-    end = time_time()
-    printf("sps=%.1f",(double)10000/(end-start));
+	struct timeval tv;
+	double start,end;
 
-    return 0;
+	gettimeofday(&tv, 0);
+	start = (double)tv.tv_sec + ((double)tv.tv_usec / 1E6);
+
+	for (rep=0; rep<10000; rep++)
+	{
+		int data = GET_GPIO_ALL;
+	}
+
+	gettimeofday(&tv, 0);
+	start = (double)tv.tv_sec + ((double)tv.tv_usec / 1E6);
+	
+	printf("sps=%.1f",(double)10000/(end-start));
+
+	return 0;
 
 } // main
 
@@ -90,28 +99,28 @@ int main(int argc, char **argv)
 //
 void setup_io()
 {
-    /* open /dev/mem */
-    if ((mem_fd = open("/dev/mem", O_RDWR|O_SYNC) ) < 0) {
-        printf("can't open /dev/mem \n");
-        exit(-1);
-    }
+	/* open /dev/mem */
+	if ((mem_fd = open("/dev/mem", O_RDWR|O_SYNC) ) < 0) {
+		printf("can't open /dev/mem \n");
+		exit(-1);
+	}
 
-    /* mmap GPIO */
-    gpio_map = mmap(
-       NULL,             //Any adddress in our space will do
-       BLOCK_SIZE,       //Map length
-       PROT_READ|PROT_WRITE,// Enable reading & writting to mapped memory
-       MAP_SHARED,       //Shared with other processes
-       mem_fd,           //File to map
-       GPIO_BASE         //Offset to GPIO peripheral
-    );
+	/* mmap GPIO */
+	gpio_map = mmap(
+	   NULL,             //Any adddress in our space will do
+	   BLOCK_SIZE,       //Map length
+	   PROT_READ|PROT_WRITE,// Enable reading & writting to mapped memory
+	   MAP_SHARED,       //Shared with other processes
+	   mem_fd,           //File to map
+	   GPIO_BASE         //Offset to GPIO peripheral
+	);
 
-    close(mem_fd); //No need to keep mem_fd open after mmap
+	close(mem_fd); //No need to keep mem_fd open after mmap
 
-    if (gpio_map == MAP_FAILED) {
-        printf("mmap error %d\n", (int)gpio_map);//errno also set!
-        exit(-1);
-    }
+	if (gpio_map == MAP_FAILED) {
+		printf("mmap error %d\n", (int)gpio_map);//errno also set!
+		exit(-1);
+	}
 
    // Always use volatile pointer!
    gpio = (volatile unsigned *)gpio_map;
