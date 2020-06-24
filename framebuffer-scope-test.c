@@ -68,14 +68,18 @@ int main(int argc, char* argv[])
     int i,j;
     // create some sample data
     for (i = 0; i < 512; i++) data[i] = (u_int8_t) 128*(sin((double)i/100)+1);
+    // clear framebuffer
+    for (i = 0; i < vinfo.yres*vinfo.xres; i++) fbp[i] = 0;
     // start timer
     struct timeval tv;
     gettimeofday(&tv, 0);
     start = (double)tv.tv_sec + ((double)tv.tv_usec / 1E6);
     for (j = 0; j < 100; j++) {
-        // clear framebuffer
-        for (i = 0; i < vinfo.yres*vinfo.xres; i++) fbp[i] = 0;
-        // then set sample data
+        // set sample data
+        for (i = 0; i < 512; i++) {
+            fbp[i + data[i] * finfo.line_length] = 1;
+        }
+        // reset sample data
         for (i = 0; i < 512; i++) {
             fbp[i + data[i] * finfo.line_length] = 1;
         }
