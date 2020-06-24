@@ -11,11 +11,13 @@
 #include <sys/ioctl.h>
 #include <sys/time.h>
 #include <math.h>
+#include "EngNotation.h"
 // These are the sizes of the individual character arrays
 #define CHAR_ARR__29x24 696
 #define CHAR_ARR__10x14 168
 #define SMALL_HEIGHT 14
 #define SMALL_WIDTH 10
+#define SMALL_SPACING 15
 const unsigned char *ascii_characters_BIG[128];	// Store the ASCII character set, but can have some elements blank
 const unsigned char *ascii_characters_SMALL[128];	// Store the ASCII character set, but can have some eleconst unsigned char *c2[128];
 const unsigned char *numbers_BIG[10];		// For quicker number display routines, these arrays of pointers to the numbers
@@ -26,6 +28,7 @@ struct fb_fix_screeninfo finfo;
 void setup_chars();
 void display_ascii_small(char *fbp, char c, int x, int y);
 void display_digit_small(char *fbp, char n, int x, int y);
+void draw_background(char *fbp, double t);
 
 // application entry point
 int main(int argc, char* argv[])
@@ -86,25 +89,9 @@ int main(int argc, char* argv[])
     for (i = 0; i < 512; i++) data[i] = (u_int8_t) 128*(sin((double)i/100)+1);
     // clear framebuffer
     for (i = 0; i < vinfo.yres*vinfo.xres; i++) fbp[i] = 0;
-
-    // create fixed background grid
-    // we will use 512x256px for the actual trace, and a resolution of 640x360px
-    // (8 bit ADC results in 256 levels so there's no point quantising to something else and losing information)
-    // lets split into 8x4 squares because why not. So lines at 64px and why not tick at 8px
-    // leave 52px left/right and 64px up/down
-    // i don't care about efficiency here because it will only be executed once.
-    int x,y;
-    for (x = 52; x < 564; x++) {
-        for (y = 64; y < 320; y++) {
-            if ((x-52)%64 == 0 || y%64 == 0) fbp[x + y * finfo.line_length] = 2;
-            else {
-                int xrel = (x-52)%64;
-                int yrel = y%64;
-                if ((x-52)%8 == 0 && (yrel < 4 || yrel > 60)) fbp[x + y * finfo.line_length] = 2;
-                if (y%8 == 0 && (xrel < 4 || xrel > 60)) fbp[x + y * finfo.line_length] = 2;
-            }
-        }
-    }
+    // draw background
+    draw_background(fbp, 1.234e-9);
+    
 
     // start timer
     struct timeval tv;
@@ -119,6 +106,7 @@ int main(int argc, char* argv[])
         for (i = 0; i < 512; i++) {
             fbp[52 + i + (64+data[i]) * finfo.line_length] = 3;
         }
+        //display_ascii_small(fbp,65,10,10);
     }
     gettimeofday(&tv, 0);
 	end = (double)tv.tv_sec + ((double)tv.tv_usec / 1E6);
@@ -147,7 +135,38 @@ void display_ascii_small(char *fbp, char c, int x, int y)
     }
 }
 void display_digit_small(char *fbp, char n, int x, int y) {
-    return;
+    int yi;
+    for (yi = 0; yi < SMALL_HEIGHT; yi++) {
+        memcpy((char*)(fbp + x + (y+yi)*finfo.line_length),(char*)(numbers_small[n] + SMALL_WIDTH*yi),SMALL_WIDTH*sizeof(u_int8_t));
+    }
+}
+void draw_background(char *fbp, double t) {
+    // create fixed background grid
+    // we will use 512x256px for the actual trace, and a resolution of 640x360px
+    // (8 bit ADC results in 256 levels so there's no point quantising to something else and losing information)
+    // assume for now that timestep is constant t
+    // although it defo won't be lol
+    // lets split into 8x4 squares because why not. So lines at 64px and why not tick at 8px
+    // leave 52px left/right and 64px up/down
+    // i don't care too much about efficiency here because it will be executed infrequently
+    int x,y;
+    for (x = 52; x < 564; x++) {
+        for (y = 64; y < 320; y++) {
+            if ((x-52)%64 == 0 || y%64 == 0) fbp[x + y * finfo.line_length] = 2;
+            else {
+                int xrel = (x-52)%64;
+                int yrel = y%64;
+                if ((x-52)%8 == 0 && (yrel < 4 || yrel > 60)) fbp[x + y * finfo.line_length] = 2;
+                if (y%8 == 0 && (xrel < 4 || xrel > 60)) fbp[x + y * finfo.line_length] = 2;
+            }
+        }
+    }
+    // write timestep in full up top then round for the markings
+    char *t_eng_notation = to_engineering_string(t,8,1);
+    int i = 0;
+    do {
+        display_ascii_small(fbp, t_eng_notation[i], 10+i*SMALL_SPACING, 10);
+    } while (t_eng_notation[++i] != '\0');
 }
 void setup_chars()
 {
@@ -1850,6 +1869,22 @@ void setup_chars()
 								   0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0
 		};
 		// specials
+		const unsigned char DOT__10x14[CHAR_ARR__10x14] = {
+											0,0,0,0,0,0,0,0,0,0,
+											0,0,0,0,0,0,0,0,0,0,
+											0,0,0,0,0,0,0,0,0,0,
+											0,0,0,0,0,0,0,0,0,0,
+											0,0,0,0,0,0,0,0,0,0,
+											0,0,0,0,0,0,0,0,0,0,
+											0,0,0,0,0,0,0,0,0,0,
+											0,0,0,0,0,0,0,0,0,0,
+											0,0,0,0,0,0,0,0,0,0,
+											0,0,0,0,0,0,0,0,0,0,
+											0,0,0,1,1,1,1,0,0,0,
+											0,0,0,1,1,1,1,0,0,0,
+											0,0,0,1,1,1,1,0,0,0,
+											0,0,0,1,1,1,1,0,0,0
+        }
 		const unsigned char COLON__10x14[CHAR_ARR__10x14] = {
 											0,0,0,1,1,1,1,0,0,0,
 											0,0,0,1,1,1,1,0,0,0,
@@ -2050,6 +2085,7 @@ void setup_chars()
 		ascii_characters_BIG[90] = Z__29x24;
 
 		ascii_characters_SMALL[32] = SPACE__10x14;
+		ascii_characters_SMALL[46] = DOT__10x14;
 		ascii_characters_SMALL[48] = AR0__10x14;
 		ascii_characters_SMALL[49] = AR1__10x14;
 		ascii_characters_SMALL[50] = AR2__10x14;
@@ -2088,8 +2124,8 @@ void setup_chars()
 		ascii_characters_SMALL[89] = Y__10x14;
 		ascii_characters_SMALL[90] = Z__10x14;
 
-		numbers_small[0] = AR0__10x14;	// For number displays
-		numbers_small[1] = AR1__10x14;
+        numbers_small[0] = AR2__10x14;   // For number displays
+        numbers_small[1] = AR2__10x14;
 		numbers_small[2] = AR2__10x14;
 		numbers_small[3] = AR3__10x14;
 		numbers_small[4] = AR4__10x14;
