@@ -166,7 +166,8 @@ void draw_rising_trigger(char *fbp, u_int8_t *data, int data_len, u_int8_t trigg
      */
     // find rising edges
     int i,j;
-    bool low = false; // data is above low trigger
+    bool low = false; // data was above low trigger
+    bool high = false; // data has hit high trigger (resets on low)
     int low_marker = 0; // the index where signal rose above low trigger
     int trigger_marker; // index to trigger on
     int t_scaling = 1; // we will want later to skip/amalgamate some of the datapoints to show higher frequencies
@@ -177,31 +178,43 @@ void draw_rising_trigger(char *fbp, u_int8_t *data, int data_len, u_int8_t trigg
     for (i = 0; i < data_len; i++) {
         printf("i: %d, data: %d\n",i,data[i]);
         if (data[i] > trigger_high) {
-            if (!low) low_marker = i;
-            low = false;
-            trigger_marker = (int)(i + low_marker)/2; // close enough
-            //t_avg = (t_avg*(rise_counter++) + trigger_marker)/rise_counter;
-            // for now, lets just redraw on every rising edge, but
-            // in future it's not worth it when several waveforms may be on screen
-            if (trigger_marker < 256) startval = 0;
-            else startval = trigger_marker - 256;
-            if (trigger_marker + 256 > data_len) endval = data_len-1;
-            else endval = trigger_marker + 256;
-            printf("st: %d tr: %d en: %d\n",startval,trigger_marker,endval);
-            sleep(1);
-            for (j = startval; j < endval; j++) {
-                printf("j: %d data: %d\n",j,data[j]);
-                fbp[308 + j - trigger_marker + (64+data[j]) * finfo.line_length] = 1; // 308 = 52 + 256, 52 is zero point
-            }
-            sleep(1); // wait to make sure it actually shows up
-            // cleanup
-            for (j = startval; j < endval; j++) {
-                fbp[308 + j - trigger_marker + (64+data[j]) * finfo.line_length] = 0; // 308 = 52 + 256, 52 is zero point
+            if (!high) {
+
+                if (!low) {
+                    low_marker = i;
+                    low = true;
+                }
+                trigger_marker = (int)(i + low_marker)/2; // close enough
+                //t_avg = (t_avg*(rise_counter++) + trigger_marker)/rise_counter;
+                // for now, lets just redraw on every rising edge, but
+                // in future it's not worth it when several waveforms may be on screen
+                if (trigger_marker < 256) startval = 0;
+                else startval = trigger_marker - 256;
+                if (trigger_marker + 256 > data_len) endval = data_len-1;
+                else endval = trigger_marker + 256;
+                printf("st: %d tr: %d en: %d\n",startval,trigger_marker,endval);
+                sleep(1);
+                for (j = startval; j < endval; j++) {
+                    printf("j: %d data: %d\n",j,data[j]);
+                    fbp[308 + j - trigger_marker + (64+data[j]) * finfo.line_length] = 1; // 308 = 52 + 256, 52 is zero point
+                }
+                sleep(1); // wait to make sure it actually shows up
+                // cleanup
+                for (j = startval; j < endval; j++) {
+                    fbp[308 + j - trigger_marker + (64+data[j]) * finfo.line_length] = 0; // 308 = 52 + 256, 52 is zero point
+                }
+                high = true; // now wait until below low
             }
         }
         else if (data[i] > trigger_low) {
-            low = true;
-            low_marker = i;
+            if (!low) {
+                low = true; // data has hit low trigger
+                low_marker = i;
+            }
+        }
+        else {
+            high = false;
+            low = false;
         }
     }
      
