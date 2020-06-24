@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
     gettimeofday(&tv, 0);
 	end = (double)tv.tv_sec + ((double)tv.tv_usec / 1E6);
     //try displaying a character
-    display_ascii_small(fbp,65,10,10);
+    //display_ascii_small(fbp,65,10,10);
     sleep(5);
   }
 
