@@ -162,7 +162,7 @@ void draw_background(char *fbp, double t) {
         }
     }
     // write timestep in full up top then round for the markings
-    char *t_eng_notation = to_engineering_string(t,8,1);
+    char *t_eng_notation = to_engineering_string(t,8,0);
     int i = 0;
     do {
         display_ascii_small(fbp, t_eng_notation[i], 10+i*SMALL_SPACING, 10);
@@ -2123,6 +2123,35 @@ void setup_chars()
 		ascii_characters_SMALL[88] = X__10x14;
 		ascii_characters_SMALL[89] = Y__10x14;
 		ascii_characters_SMALL[90] = Z__10x14;
+
+        // just blank out lowercase for now
+        ascii_characters_SMALL[97] = SPACE__10x14;
+        ascii_characters_SMALL[98] = SPACE__10x14;
+        ascii_characters_SMALL[99] = SPACE__10x14;
+        ascii_characters_SMALL[100] = SPACE__10x14;
+        ascii_characters_SMALL[101] = SPACE__10x14;
+        ascii_characters_SMALL[102] = SPACE__10x14;
+        ascii_characters_SMALL[103] = SPACE__10x14;
+        ascii_characters_SMALL[104] = SPACE__10x14;
+        ascii_characters_SMALL[105] = SPACE__10x14;
+        ascii_characters_SMALL[106] = SPACE__10x14;
+        ascii_characters_SMALL[107] = SPACE__10x14;
+        ascii_characters_SMALL[108] = SPACE__10x14;
+        ascii_characters_SMALL[109] = SPACE__10x14;
+        ascii_characters_SMALL[110] = SPACE__10x14;
+        ascii_characters_SMALL[111] = SPACE__10x14;
+        ascii_characters_SMALL[112] = SPACE__10x14;
+        ascii_characters_SMALL[113] = SPACE__10x14;
+        ascii_characters_SMALL[114] = SPACE__10x14;
+        ascii_characters_SMALL[115] = SPACE__10x14;
+        ascii_characters_SMALL[116] = SPACE__10x14;
+        ascii_characters_SMALL[117] = SPACE__10x14;
+        ascii_characters_SMALL[118] = SPACE__10x14;
+        ascii_characters_SMALL[119] = SPACE__10x14;
+        ascii_characters_SMALL[120] = SPACE__10x14;
+        ascii_characters_SMALL[121] = SPACE__10x14;
+        ascii_characters_SMALL[122] = SPACE__10x14;
+
 
         numbers_small[0] = AR2__10x14;   // For number displays
         numbers_small[1] = AR2__10x14;
