@@ -175,7 +175,7 @@ void draw_rising_trigger(char *fbp, u_int8_t *data, int data_len, u_int8_t trigg
     //double t_avg = 0; // average period so far (in units of timestep)
     //int rise_counter = 0
     for (i = 0; i < data_len; i++) {
-        printf("i: %d, data: %d",i,data[i])
+        printf("i: %d, data: %d",i,data[i]);
         if (data[i] > trigger_high) {
             if (!low) low_marker = i;
             low = false;
