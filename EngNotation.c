@@ -32,6 +32,7 @@
 #include <assert.h>
 
 #include "EngNotation.h"
+#define _GNU_SOURCE // required for asprintf
 
 
 /* 
@@ -52,13 +53,6 @@ static char *prefix[NUM_PREFIX] = {
   "",  "k", "M", "G",
   "T", "P", "E", "Z",
   "Y"
-};
-static char *reversePrefix[NUM_PREFIX] = {
- "e-24", "e-21", "e-18", "e-15",
- "e-12", "e-9", "e-6", "e-3",
- "e0", "e3", "e6", "e9",
- "e12", "e15", "e18", "e21",
- "e24"
 };
 
 const int prefix_count = NUM_PREFIX;
