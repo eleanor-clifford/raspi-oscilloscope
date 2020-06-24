@@ -6,6 +6,7 @@
 #include <linux/fb.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
+#include <sys/time.h>
 #include <math.h>
 
 // application entry point
@@ -64,22 +65,23 @@ int main(int argc, char* argv[])
     // drawing time...
     // create example data, 512 1-byte samples
     u_int8_t *data = malloc(512*sizeof(u_int8_t));
-    for (int i = 0; i < 512; i++) data[i] = (u_int8_t) 128*(sin((double)i/100));
-    int x;
-    unsigned int pix_offset;
-
-    //for (y = 0; y < (vinfo.yres / 2); y++) {
-    for (x = 0; x < 512; x++) {
-
-        // calculate the pixel's byte offset inside the buffer
-        // see the image above in the blog...
-        pix_offset = x + data[x] * finfo.line_length;
-
-        // now this is about the same as fbp[pix_offset] = value
-        *((char*)(fbp + pix_offset)) = 16 * x / vinfo.xres;
-
+    int i,j;
+    // create some sample data
+    for (i = 0; i < 512; i++) data[i] = (u_int8_t) 128*(sin((double)i/100)+1);
+    // start timer
+    double start,end;
+    gettimeofday(&tv, 0);
+	start = (double)tv.tv_sec + ((double)tv.tv_usec / 1E6);
+    for (j = 0; j < 10000; j++) {
+        // clear framebuffer
+        for (i = 0; i < vinfo.yres*vinfo.xres; i++) fbp[pix_offset] = 0
+        // then set sample data
+        for (i = 0; i < 512; i++) {
+            fbp[x + data[x] * finfo.line_length] = 1;
+        }
     }
-
+    gettimeofday(&tv, 0);
+	end = (double)tv.tv_sec + ((double)tv.tv_usec / 1E6);
     sleep(5);
   }
 
@@ -89,7 +91,9 @@ int main(int argc, char* argv[])
     printf("Error re-setting variable information.\n");
   }
   close(fbfd);
-
+  
+  // output refresh rate
+  printf("%.1fHz\n",(double)10000/(end-start));
   return 0;
   
 }
