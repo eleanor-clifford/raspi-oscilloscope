@@ -29,7 +29,7 @@ void draw_trace_rising_edge(char *fbp, u_int8_t *data, int data_len, u_int8_t tr
 // application entry point
 int main(int argc, char* argv[])
 {
-  srand(time(NULL))
+  srand(time(NULL));
   int fbfd = 0;
   long int screensize = 0;
   char *fbp = 0;
