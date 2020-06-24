@@ -20,17 +20,17 @@ const unsigned char *ascii_characters_BIG[128];	// Store the ASCII character set
 const unsigned char *ascii_characters_SMALL[128];	// Store the ASCII character set, but can have some eleconst unsigned char *c2[128];
 const unsigned char *numbers_BIG[10];		// For quicker number display routines, these arrays of pointers to the numbers
 const unsigned char *numbers_small[10];
+struct fb_var_screeninfo orig_vinfo;
+struct fb_var_screeninfo vinfo;
+struct fb_fix_screeninfo finfo;
 void setup_chars();
-void display_ascii_small(char *fbp, char c, u_int8_t color, int x, int y);
-void display_digit_small(char *fbp, char n, u_int8_t color, int x, int y);
+void display_ascii_small(char *fbp, char c, int x, int y);
+void display_digit_small(char *fbp, char n, int x, int y);
 
 // application entry point
 int main(int argc, char* argv[])
 {
   int fbfd = 0;
-  struct fb_var_screeninfo orig_vinfo;
-  struct fb_var_screeninfo vinfo;
-  struct fb_fix_screeninfo finfo;
   long int screensize = 0;
   char *fbp = 0;
   double start,end;
@@ -143,7 +143,7 @@ void display_ascii_small(char *fbp, char c, int x, int y)
 {
     int yi;
     for (yi = 0; yi < SMALL_HEIGHT; yi++) {
-        memcpy((char*)(fbp + x + (y+yi)*finfo.line_length),(char*)(ascii_characters_SMALL[c] + SMALL_WIDTH*yi),SMALL_WIDTH*sizeof(u_int8_t))
+        memcpy((char*)(fbp + x + (y+yi)*finfo.line_length),(char*)(ascii_characters_SMALL[c] + SMALL_WIDTH*yi),SMALL_WIDTH*sizeof(u_int8_t));
     }
 }
 void display_digit_small(char *fbp, char n, u_int8_t color, int x, int y) {
