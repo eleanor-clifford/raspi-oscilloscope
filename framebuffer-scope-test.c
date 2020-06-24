@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
     // draw background
     draw_background(fbp, 1.234e-9);
     // noise is less than 13 units, so lets set the triggers at 114 and 142
-    draw_rising_trigger(fbp,data,131072,114,142);
+    draw_rising_trigger(fbp,data,131072,32,224);
     sleep(5);
   }
 
