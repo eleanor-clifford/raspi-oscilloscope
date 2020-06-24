@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
     int x,y;
     for (x = 52; x < 564; x++) {
         for (y = 64; y < 320; y++) {
-            if ((x-52)%64 == 0 || y%64) fbp[x + y * finfo.line_length] = 2;
+            if ((x-52)%64 == 0 || y%64 == 0) fbp[x + y * finfo.line_length] = 2;
             else {
                 int xrel = (x-52)%64;
                 int yrel = y%64;
@@ -96,12 +96,12 @@ int main(int argc, char* argv[])
     start = (double)tv.tv_sec + ((double)tv.tv_usec / 1E6);
     for (j = 0; j < 100; j++) {
         // set sample data
-        for (i = 52; i < 564; i++) {
-            fbp[64 + i + data[i] * finfo.line_length] = 1;
+        for (i = 0; i < 512; i++) {
+            fbp[52 + i + (64+data[i]) * finfo.line_length] = 1;
         }
         // reset sample data
-        for (i = 52; i < 564; i++) {
-            fbp[64 + i + data[i] * finfo.line_length] = 3;
+        for (i = 0; i < 512; i++) {
+            fbp[52 + i + (64+data[i]) * finfo.line_length] = 3;
         }
     }
     gettimeofday(&tv, 0);
