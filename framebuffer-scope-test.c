@@ -186,13 +186,15 @@ void draw_rising_trigger(char *fbp, u_int8_t *data, int data_len, u_int8_t trigg
             else startval = trigger_marker - 256;
             if (trigger_marker + 256 > data_len) endval = data_len-1;
             else endval = trigger_marker + 256;
+            //printf("%d %d %d",startval,trigger_marker,endval);
             for (j = startval; j < endval; j++) {
-                fbp[308 + j - trigger_marker + (64+data[i]) * finfo.line_length] = 1; // 308 = 52 + 256, 52 is zero point
+                //printf("%d %d",j,data[j]);
+                fbp[308 + j - trigger_marker + (64+data[j]) * finfo.line_length] = 1; // 308 = 52 + 256, 52 is zero point
             }
             sleep(1); // wait to make sure it actually shows up
             // cleanup
             for (j = startval; j < endval; j++) {
-                fbp[308 + j - trigger_marker + (64+data[i]) * finfo.line_length] = 0; // 308 = 52 + 256, 52 is zero point
+                fbp[308 + j - trigger_marker + (64+data[j]) * finfo.line_length] = 0; // 308 = 52 + 256, 52 is zero point
             }
         }
         else if (data[i] > trigger_low) {
