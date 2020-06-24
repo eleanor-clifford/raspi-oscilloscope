@@ -24,10 +24,12 @@ struct fb_fix_screeninfo finfo;
 void setup_chars();
 void display_ascii(char *fbp, char c, int x, int y);
 void draw_background(char *fbp, double t);
+void draw_trace_rising_edge(char *fbp, u_int8_t *data, int data_len, u_int8_t trigger_low, u_int8_t trigger_high);
 
 // application entry point
 int main(int argc, char* argv[])
 {
+  srand(time(NULL))
   int fbfd = 0;
   long int screensize = 0;
   char *fbp = 0;
@@ -77,36 +79,17 @@ int main(int argc, char* argv[])
   }
   else {
     // drawing time...
-    // create example data, 512 1-byte samples
-    u_int8_t *data = malloc(512*sizeof(u_int8_t));
+    // create example data, 131072 1-byte samples
+    u_int8_t *data = malloc(131072*sizeof(u_int8_t));
     int i,j;
-    // create some sample data
-    for (i = 0; i < 512; i++) data[i] = (u_int8_t) 128*(sin((double)i/100)+1);
+    // create some sample data with noise
+    for (i = 0; i < 131072; i++) data[i] = (u_int8_t) 128*(sin((double)i/100)+1 + ((double)rand()/RAND_MAX*0.2-0.1));
     // clear framebuffer
     for (i = 0; i < vinfo.yres*vinfo.xres; i++) fbp[i] = 0;
     // draw background
     draw_background(fbp, 1.234e-9);
-    
-
-    // start timer
-    struct timeval tv;
-    gettimeofday(&tv, 0);
-    start = (double)tv.tv_sec + ((double)tv.tv_usec / 1E6);
-    for (j = 0; j < 100; j++) {
-        // set sample data
-        for (i = 0; i < 512; i++) {
-            fbp[52 + i + (64+data[i]) * finfo.line_length] = 1;
-        }
-        // reset sample data
-        for (i = 0; i < 512; i++) {
-            fbp[52 + i + (64+data[i]) * finfo.line_length] = 3;
-        }
-        //display_ascii_small(fbp,65,10,10);
-    }
-    gettimeofday(&tv, 0);
-	end = (double)tv.tv_sec + ((double)tv.tv_usec / 1E6);
-    //try displaying a character
-    //display_ascii_small(fbp,65,10,10);
+    // noise is less than 13 units, so lets set the triggers at 114 and 142
+    draw_rising_trigger(fbp,data,131072,114,142);
     sleep(5);
   }
 
@@ -158,10 +141,65 @@ void draw_background(char *fbp, double t) {
         display_ascii(fbp, test_string[i], 10+i*CHAR_SPACING, 10);
     } while (test_string[++i] != '\0');
     char *test_string_2 = "0123456789\0";
-    int i = 0;
+    i = 0;
     do {
         display_ascii(fbp, test_string_2[i], 10+i*CHAR_SPACING, 30);
     } while (test_string_2[++i] != '\0');
+}
+void draw_rising_trigger(char *fbp, u_int8_t *data, int data_len, u_int8_t trigger_low, u_int8_t trigger_high) {
+    /* Trigger the signal based on an average of the times 
+     * when the signal passes a high and low trigger
+     *  |   /\         |   /\ 
+     *  |  /  \        |  /  \
+     *  |_/____\_______|_/____\____ high trigger
+     *  |/      \      |/      \
+     *_/|________\____/|________\__ low trigger
+     *  |         \  / |
+     *  |          \/  |            vertical lines will be centered on screen
+     * 
+     * this allows noise within trigger levels without it spasming on screen
+     *
+     * making this low efficiency now, will have to optimise later
+     * prioritise low memory use, since `data` should fill
+     * as much of main memory as possible
+     */
+    // find rising edges
+    int i,j;
+    bool low = false; // data is above low trigger
+    int low_marker = 0; // the index where signal rose above low trigger
+    int trigger_marker; // index to trigger on
+    int t_scaling = 1; // we will want later to skip/amalgamate some of the datapoints to show higher frequencies
+    int startval,endval;
+    //int last_trigger = 0;
+    //double t_avg = 0; // average period so far (in units of timestep)
+    //int rise_counter = 0
+    for (i = 0; i < data_len; i++) {
+        if (data[i] > trigger_high) {
+            if (!low) low_marker = i;
+            low = false;
+            trigger_marker = (int)(i + low_marker)/2; // close enough
+            //t_avg = (t_avg*(rise_counter++) + trigger_marker)/rise_counter;
+            // for now, lets just redraw on every rising edge, but
+            // in future it's not worth it when several waveforms may be on screen
+            if (trigger_marker < 256) startval = 0;
+            else startval = trigger_marker - 256;
+            if (trigger_marker + 256 > data_len) endval = data_len-1;
+            else endval = trigger_marker + 256;
+            for (j = startval; j < endval; j++) {
+                fbp[308 + j - trigger_marker + (64+data[i]) * finfo.line_length] = 1; // 308 = 52 + 256, 52 is zero point
+            }
+            sleep(1); // wait to make sure it actually shows up
+            // cleanup
+            for (j = startval; j < endval; j++) {
+                fbp[308 + j - trigger_marker + (64+data[i]) * finfo.line_length] = 0; // 308 = 52 + 256, 52 is zero point
+            }
+        }
+        else if (data[i] > trigger_low) {
+            low = true;
+            low_marker = i;
+        }
+    }
+     
 }
 void setup_chars()
 {
