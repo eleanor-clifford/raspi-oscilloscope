@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
     // create some sample data
     for (i = 0; i < 512; i++) data[i] = (u_int8_t) 128*(sin((double)i/100)+1);
     // clear framebuffer
-    //for (i = 0; i < vinfo.yres*vinfo.xres; i++) fbp[i] = 0;
+    for (i = 0; i < vinfo.yres*vinfo.xres; i++) fbp[i] = 0;
 
     // create fixed background grid
     // we will use 512x256px for the actual trace, and a resolution of 640x360px
@@ -84,8 +84,8 @@ int main(int argc, char* argv[])
             else {
                 int xrel = (x-52)%64;
                 int yrel = y%64;
-                if ((x-52)%8 == 0 && (yrel < 8 || yrel > 56)) fbp[x + y * finfo.line_length] = 2;
-                if (y%8 == 0 && (xrel < 8 || xrel > 56)) fbp[x + y * finfo.line_length] = 2;
+                if ((x-52)%8 == 0 && (yrel < 4 || yrel > 60)) fbp[x + y * finfo.line_length] = 2;
+                if (y%8 == 0 && (xrel < 4 || xrel > 60)) fbp[x + y * finfo.line_length] = 2;
             }
         }
     }
@@ -96,12 +96,12 @@ int main(int argc, char* argv[])
     start = (double)tv.tv_sec + ((double)tv.tv_usec / 1E6);
     for (j = 0; j < 100; j++) {
         // set sample data
-        for (i = 0; i < 512; i++) {
-            fbp[i + data[i] * finfo.line_length] = 1;
+        for (i = 52; i < 564; i++) {
+            fbp[64 + i + data[i] * finfo.line_length] = 1;
         }
         // reset sample data
-        for (i = 0; i < 512; i++) {
-            fbp[i + data[i] * finfo.line_length] = 1;
+        for (i = 52; i < 564; i++) {
+            fbp[64 + i + data[i] * finfo.line_length] = 3;
         }
     }
     gettimeofday(&tv, 0);
