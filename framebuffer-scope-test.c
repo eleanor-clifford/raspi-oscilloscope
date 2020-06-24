@@ -10,6 +10,7 @@
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
+#include <time.h>
 #include <math.h>
 #include "EngNotation.h"
 // These are the sizes of the individual character arrays
@@ -24,7 +25,7 @@ struct fb_fix_screeninfo finfo;
 void setup_chars();
 void display_ascii(char *fbp, char c, int x, int y);
 void draw_background(char *fbp, double t);
-void draw_trace_rising_edge(char *fbp, u_int8_t *data, int data_len, u_int8_t trigger_low, u_int8_t trigger_high);
+void draw_rising_trigger(char *fbp, u_int8_t *data, int data_len, u_int8_t trigger_low, u_int8_t trigger_high);
 
 // application entry point
 int main(int argc, char* argv[])
