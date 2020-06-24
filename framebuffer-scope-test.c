@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
     u_int8_t *data = malloc(131072*sizeof(u_int8_t));
     int i,j;
     // create some sample data with noise
-    for (i = 0; i < 131072; i++) data[i] = (u_int8_t) 128*(sin((double)i/100)+1 + ((double)rand()/RAND_MAX*0.2-0.1));
+    for (i = 0; i < 131072; i++) data[i] = (u_int8_t) 128*(0.9*sin((double)i/100)+1 + ((double)rand()/RAND_MAX*0.2-0.1));
     // clear framebuffer
     for (i = 0; i < vinfo.yres*vinfo.xres; i++) fbp[i] = 0;
     // draw background
