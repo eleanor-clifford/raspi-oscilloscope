@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
   struct fb_fix_screeninfo finfo;
   long int screensize = 0;
   char *fbp = 0;
-
+  double start,end;
 
   // Open the file for reading and writing
   fbfd = open("/dev/fb0", O_RDWR);
@@ -69,15 +69,15 @@ int main(int argc, char* argv[])
     // create some sample data
     for (i = 0; i < 512; i++) data[i] = (u_int8_t) 128*(sin((double)i/100)+1);
     // start timer
-    double start,end;
+    struct timeval tv;
     gettimeofday(&tv, 0);
-	start = (double)tv.tv_sec + ((double)tv.tv_usec / 1E6);
-    for (j = 0; j < 10000; j++) {
+    start = (double)tv.tv_sec + ((double)tv.tv_usec / 1E6);
+    for (j = 0; j < 100; j++) {
         // clear framebuffer
-        for (i = 0; i < vinfo.yres*vinfo.xres; i++) fbp[pix_offset] = 0
+        for (i = 0; i < vinfo.yres*vinfo.xres; i++) fbp[i] = 0;
         // then set sample data
         for (i = 0; i < 512; i++) {
-            fbp[x + data[x] * finfo.line_length] = 1;
+            fbp[i + data[i] * finfo.line_length] = 1;
         }
     }
     gettimeofday(&tv, 0);
@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
   close(fbfd);
   
   // output refresh rate
-  printf("%.1fHz\n",(double)10000/(end-start));
+  printf("%.1fHz\n",(double)100/(end-start));
   return 0;
   
 }
