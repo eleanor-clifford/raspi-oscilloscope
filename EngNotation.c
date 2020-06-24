@@ -23,7 +23,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-
+#define _GNU_SOURCE // required for asprintf
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -32,7 +32,7 @@
 #include <assert.h>
 
 #include "EngNotation.h"
-#define _GNU_SOURCE // required for asprintf
+
 
 
 /* 
