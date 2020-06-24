@@ -152,7 +152,7 @@ void draw_background(char *fbp, double t) {
     }
     // write timestep in full up top then round for the markings
     char *t_eng_notation = to_engineering_string(t,8,0);
-    char *test_string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\0";
+    char *test_string = "LMNOPQRSTUVWXYZ\0";
     int i = 0;
     do {
         display_ascii(fbp, test_string[i], 10+i*CHAR_SPACING, 10);
