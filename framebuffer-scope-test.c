@@ -157,11 +157,11 @@ void draw_background(char *fbp, double t) {
     do {
         display_ascii(fbp, test_string[i], 10+i*CHAR_SPACING, 10);
     } while (test_string[++i] != '\0');
-    char *test_string = "0123456789\0";
+    char *test_string_2 = "0123456789\0";
     int i = 0;
     do {
-        display_ascii(fbp, test_string[i], 10+i*CHAR_SPACING, 30);
-    } while (test_string[++i] != '\0');
+        display_ascii(fbp, test_string_2[i], 10+i*CHAR_SPACING, 30);
+    } while (test_string_2[++i] != '\0');
 }
 void setup_chars()
 {
