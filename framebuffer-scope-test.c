@@ -69,7 +69,27 @@ int main(int argc, char* argv[])
     // create some sample data
     for (i = 0; i < 512; i++) data[i] = (u_int8_t) 128*(sin((double)i/100)+1);
     // clear framebuffer
-    for (i = 0; i < vinfo.yres*vinfo.xres; i++) fbp[i] = 0;
+    //for (i = 0; i < vinfo.yres*vinfo.xres; i++) fbp[i] = 0;
+
+    // create fixed background grid
+    // we will use 512x256px for the actual trace, and a resolution of 640x360px
+    // (8 bit ADC results in 256 levels so there's no point quantising to something else and losing information)
+    // lets split into 8x4 squares because why not. So lines at 64px and why not tick at 8px
+    // leave 52px left/right and 64px up/down
+    // i don't care about efficiency here because it will only be executed once.
+    int x,y;
+    for (x = 52; x < 564; x++) {
+        for (y = 64; y < 320; y++) {
+            if ((x-52)%64 == 0 || y%64) fbp[x + y * finfo.line_length] = 2;
+            else {
+                int xrel = (x-52)%64;
+                int yrel = y%64;
+                if ((x-52)%8 == 0 && (yrel < 8 || yrel > 56)) fbp[x + y * finfo.line_length] = 2;
+                if (y%8 == 0 && (xrel < 8 || xrel > 56)) fbp[x + y * finfo.line_length] = 2;
+            }
+        }
+    }
+
     // start timer
     struct timeval tv;
     gettimeofday(&tv, 0);
