@@ -155,7 +155,7 @@ void draw_background(char *fbp, double t) {
     char *test_string = "ABCDEFGHIJKkLMmNOPQRSsTUuVWXYZ\0";
     int i = 0;
     do {
-        display_ascii_small(fbp, test_string[i], 10+i*CHAR_SPACING, 10);
+        display_ascii(fbp, test_string[i], 10+i*CHAR_SPACING, 10);
     } while (t_eng_notation[++i] != '\0');
 }
 void setup_chars()
