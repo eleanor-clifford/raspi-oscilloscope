@@ -1,155 +1,68 @@
-// Uses code from Raspberry Compote http://raspberrycompote.blogspot.com/2012/12/low-level-graphics-on-raspberry-pi-part_9509.html
-// and glyphs from JSBallista https://github.com/JSBattista/Characters_To_Linux_Buffer_THE_HARD_WAY
-
+/*
+ * display
+ * The objective of this C program is to merely display text, lines and rectangles
+ * on a screen using basic Linx Framebuffer routines. 
+ * This is "text the hard way", where the characters are defined initially as arrays
+ * of 1 and 0. While this is tedious, it allows much freedom for quick and dirty display
+ * on the screen. The code can be pared back, removing characters that are never used by the program.
+ * With arrays of 1 or 0 they can be easily modififed, and the color can be decided at print time. 
+ * Note there is a "pre color " routine and a memory move version to display characters.  
+ * These special routines might have some side effects. 
+ * To show how to do smooth animation with number counting or display, some animation via "page flipping" 
+ * is done, as derived from the original demo that this demo is built upon. 
+ * There are wayt to put graphics to arrays, usually by reading monochrome bitmaps. So that makes it 
+ * possible to build custom characters or fonts. The fonts in this demo are actually influenced from 
+ * the sentry gun displays from Aliens https://www.youtube.com/watch?v=HQDy-5IQvuU
+ *
+ * compile with 'gcc -O2 -o display display.c'
+ * run with './display'
+ *
+ * Additonal notes: 
+ * - Take note of the "pixel depth" value. In this demo it's set at 8, meaning that 
+ * it uses a color "range" defined by 0 to 15 in value. Be watchful of the system you are 
+ * using and what it's capable of. If you go to a greater depth, you can use a larger variable
+ * to carry a larger color value. It will slow the program down. This program was made with 
+ * simpler systems in mind that might use a simpler and less capable TFT LCD or something 
+ * of that nature. 
+ * - It's important that this program restore the screen settings on exit. 
+ * - This program demonstrates some minor animation effects merely to show that it's 
+ * a possibility. But there is no "edge" checking routine for the screen buffer array. 
+ * So as usual with programs like this, you can cause a segfault if you go out of bounds. 
+ * - While a "space" character in both array sizes exists, the system on which this was 
+ * tested was doing odd things with the array of 0s, and strange artifacts were appearing
+ * in displayed text that had spaces. So the drawing routines for strings instead just 
+ * move over instead of drawing a space. Performance on other sytems may vary. 
+ * - This program was tested on a Raspberry Pi using a small HDMI screen. If using an extra
+ * LCD screen such as the sort connected via SPI the buffer number may differ, such as 
+ * "fb1" instead of "fb0".  
+ * - The characters are hard-coded in a block and the arrays of pointers that point to them
+ * put the pointer to the character in the respective ASCII value. This means they are 128
+ * elements, but not all are occupied. This allows atoi conversions to be quicker but 
+ * if less characters are needed other more efficient ways are possible. 
+ * 
+ * This demo is based on riginal work by J-P Rosti (a.k.a -rst- and 'Raspberry Compote')
+ * http://raspberrycompote.blogspot.com/2015/01/low-level-graphics-on-raspberry-pi-part.html
+ * http://raspberrycompote.blogspot.com/2015/01/low-level-graphics-on-raspberry-pi-part_27.html
+ *
+ *
+ */
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
-#include <linux/fb.h>
 #include <sys/mman.h>
-#include <sys/ioctl.h>
-#include <sys/time.h>
-#include <math.h>
+#include <linux/fb.h>
+#include <linux/kd.h>
+#include <linux/ioctl.h>
 // These are the sizes of the individual character arrays
 #define CHAR_ARR__29x24 696
 #define CHAR_ARR__10x14 168
-#define SMALL_HEIGHT 14
-#define SMALL_WIDTH 10
 const unsigned char *ascii_characters_BIG[128];	// Store the ASCII character set, but can have some elements blank
 const unsigned char *ascii_characters_SMALL[128];	// Store the ASCII character set, but can have some eleconst unsigned char *c2[128];
 const unsigned char *numbers_BIG[10];		// For quicker number display routines, these arrays of pointers to the numbers
 const unsigned char *numbers_small[10];
-void setup_chars();
-void display_ascii_small(char *fbp, char c, u_int8_t color, int x, int y);
-void display_digit_small(char *fbp, char n, u_int8_t color, int x, int y);
-
-// application entry point
 int main(int argc, char* argv[])
-{
-  int fbfd = 0;
-  struct fb_var_screeninfo orig_vinfo;
-  struct fb_var_screeninfo vinfo;
-  struct fb_fix_screeninfo finfo;
-  long int screensize = 0;
-  char *fbp = 0;
-  double start,end;
-  setup_chars();
-
-  // Open the file for reading and writing
-  fbfd = open("/dev/fb0", O_RDWR);
-  if (!fbfd) {
-    printf("Error: cannot open framebuffer device.\n");
-    return(1);
-  }
-  printf("The framebuffer device was opened successfully.\n");
-
-  // Get variable screen information
-  if (ioctl(fbfd, FBIOGET_VSCREENINFO, &vinfo)) {
-    printf("Error reading variable information.\n");
-  }
-  printf("Original %dx%d, %dbpp\n", vinfo.xres, vinfo.yres, 
-         vinfo.bits_per_pixel );
-
-  // Store for reset (copy vinfo to vinfo_orig)
-  memcpy(&orig_vinfo, &vinfo, sizeof(struct fb_var_screeninfo));
-
-  // Change variable info
-  vinfo.bits_per_pixel = 8;
-  if (ioctl(fbfd, FBIOPUT_VSCREENINFO, &vinfo)) {
-    printf("Error setting variable information.\n");
-  }
-  
-  // Get fixed screen information
-  if (ioctl(fbfd, FBIOGET_FSCREENINFO, &finfo)) {
-    printf("Error reading fixed information.\n");
-  }
-
-  // map fb to user mem 
-  screensize = finfo.smem_len;
-  fbp = (char*)mmap(0, 
-                    screensize, 
-                    PROT_READ | PROT_WRITE, 
-                    MAP_SHARED, 
-                    fbfd, 
-                    0);
-
-  if ((int)fbp == -1) {
-    printf("Failed to mmap.\n");
-  }
-  else {
-    // drawing time...
-    // create example data, 512 1-byte samples
-    u_int8_t *data = malloc(512*sizeof(u_int8_t));
-    int i,j;
-    // create some sample data
-    for (i = 0; i < 512; i++) data[i] = (u_int8_t) 128*(sin((double)i/100)+1);
-    // clear framebuffer
-    for (i = 0; i < vinfo.yres*vinfo.xres; i++) fbp[i] = 0;
-
-    // create fixed background grid
-    // we will use 512x256px for the actual trace, and a resolution of 640x360px
-    // (8 bit ADC results in 256 levels so there's no point quantising to something else and losing information)
-    // lets split into 8x4 squares because why not. So lines at 64px and why not tick at 8px
-    // leave 52px left/right and 64px up/down
-    // i don't care about efficiency here because it will only be executed once.
-    int x,y;
-    for (x = 52; x < 564; x++) {
-        for (y = 64; y < 320; y++) {
-            if ((x-52)%64 == 0 || y%64 == 0) fbp[x + y * finfo.line_length] = 2;
-            else {
-                int xrel = (x-52)%64;
-                int yrel = y%64;
-                if ((x-52)%8 == 0 && (yrel < 4 || yrel > 60)) fbp[x + y * finfo.line_length] = 2;
-                if (y%8 == 0 && (xrel < 4 || xrel > 60)) fbp[x + y * finfo.line_length] = 2;
-            }
-        }
-    }
-
-    // start timer
-    struct timeval tv;
-    gettimeofday(&tv, 0);
-    start = (double)tv.tv_sec + ((double)tv.tv_usec / 1E6);
-    for (j = 0; j < 100; j++) {
-        // set sample data
-        for (i = 0; i < 512; i++) {
-            fbp[52 + i + (64+data[i]) * finfo.line_length] = 1;
-        }
-        // reset sample data
-        for (i = 0; i < 512; i++) {
-            fbp[52 + i + (64+data[i]) * finfo.line_length] = 3;
-        }
-    }
-    gettimeofday(&tv, 0);
-	end = (double)tv.tv_sec + ((double)tv.tv_usec / 1E6);
-    //try displaying a character
-    display_ascii_small(fbp,65,10,10);
-    sleep(5);
-  }
-
-  // cleanup
-  munmap(fbp, screensize);
-  if (ioctl(fbfd, FBIOPUT_VSCREENINFO, &orig_vinfo)) {
-    printf("Error re-setting variable information.\n");
-  }
-  close(fbfd);
-  
-  // output refresh rate
-  printf("%.1fHz\n",(double)100/(end-start));
-  return 0;
-  
-}
-void display_ascii_small(char *fbp, char c, int x, int y)
-{
-    int yi;
-    for (yi = 0; yi < SMALL_HEIGHT; yi++) {
-        memcpy((char*)(fbp + x + (y+yi)*finfo.line_length),(char*)(ascii_characters_SMALL[c] + SMALL_WIDTH*yi),SMALL_WIDTH*sizeof(u_int8_t))
-    }
-}
-void display_digit_small(char *fbp, char n, u_int8_t color, int x, int y) {
-    return;
-}
-void setup_chars()
 {
  	// The actual glyphs here. Discard that which is not used to save memory
 	{
