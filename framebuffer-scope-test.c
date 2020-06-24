@@ -146,7 +146,7 @@ void display_ascii_small(char *fbp, char c, int x, int y)
         memcpy((char*)(fbp + x + (y+yi)*finfo.line_length),(char*)(ascii_characters_SMALL[c] + SMALL_WIDTH*yi),SMALL_WIDTH*sizeof(u_int8_t));
     }
 }
-void display_digit_small(char *fbp, char n, u_int8_t color, int x, int y) {
+void display_digit_small(char *fbp, char n, int x, int y) {
     return;
 }
 void setup_chars()
