@@ -1,15 +1,50 @@
+//  GPIO Access macros
+//  15-January-2012
+//  Dom and Gert
+//  Revised: 15-Feb-2013
+// Access from ARM Running Linux
+
+#define BCM2708_PERI_BASE        0x20000000
+#define GPIO_BASE                (BCM2708_PERI_BASE + 0x200000) /* GPIO controller */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/time.h>
+#include <unistd.h>
+
+#define PAGE_SIZE (4*1024)
+#define BLOCK_SIZE (4*1024)
+
+int  mem_fd;
+void *gpio_map;
+
+// I/O access
+volatile unsigned *gpio;
+
+
+// GPIO setup macros. Always use INP_GPIO(x) before using OUT_GPIO(x) or SET_GPIO_ALT(x,y)
+#define INP_GPIO(g) *(gpio+((g)/10)) &= ~(7<<(((g)%10)*3))
+#define OUT_GPIO(g) *(gpio+((g)/10)) |=  (1<<(((g)%10)*3))
+#define SET_GPIO_ALT(g,a) *(gpio+(((g)/10))) |= (((a)<=3?(a)+4:(a)==4?3:2)<<(((g)%10)*3))
+
+#define GPIO_SET *(gpio+7)  // sets   bits which are 1 ignores bits which are 0
+#define GPIO_CLR *(gpio+10) // clears bits which are 1 ignores bits which are 0
+
+#define GET_GPIO(g) (*(gpio+13)&(1<<g)) // 0 if LOW, (1<<g) if HIGH
+#define GET_GPIO_ALL *(gpio+13)
+
+#define GPIO_PULL *(gpio+37) // Pull up/pull down
+#define GPIO_PULLCLK0 *(gpio+38) // Pull up/pull down clock
+
+
 // Uses code from Raspberry Compote http://raspberrycompote.blogspot.com/2012/12/low-level-graphics-on-raspberry-pi-part_9509.html
 // and glyphs from JSBallista https://github.com/JSBattista/Characters_To_Linux_Buffer_THE_HARD_WAY
 
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
 #include <linux/fb.h>
-#include <sys/mman.h>
 #include <sys/ioctl.h>
-#include <sys/time.h>
 #include <time.h>
 #include <math.h>
 #include "EngNotation.h"
@@ -26,59 +61,20 @@ void setup_chars();
 void display_ascii(char *fbp, char c, int x, int y);
 void draw_background(char *fbp, double t);
 void draw_rising_trigger(char *fbp, u_int8_t *data, int data_len, u_int8_t trigger_low, u_int8_t trigger_high);
+void setup_io();
+void setup_framebuffer();
+void cleanup_framebuffer();
+char *fbp = 0;
+int fbfd = 0;
+u_int8_t *request_data(int data_len, int delay_usec);
 
 // application entry point
 int main(int argc, char* argv[])
 {
-  srand(time(NULL));
-  int fbfd = 0;
-  long int screensize = 0;
-  char *fbp = 0;
-  double start,end;
-  setup_chars();
-
-  // Open the file for reading and writing
-  fbfd = open("/dev/fb0", O_RDWR);
-  if (!fbfd) {
-    printf("Error: cannot open framebuffer device.\n");
-    return(1);
-  }
-  printf("The framebuffer device was opened successfully.\n");
-
-  // Get variable screen information
-  if (ioctl(fbfd, FBIOGET_VSCREENINFO, &vinfo)) {
-    printf("Error reading variable information.\n");
-  }
-  printf("Original %dx%d, %dbpp\n", vinfo.xres, vinfo.yres, 
-         vinfo.bits_per_pixel );
-
-  // Store for reset (copy vinfo to vinfo_orig)
-  memcpy(&orig_vinfo, &vinfo, sizeof(struct fb_var_screeninfo));
-
-  // Change variable info
-  vinfo.bits_per_pixel = 8;
-  if (ioctl(fbfd, FBIOPUT_VSCREENINFO, &vinfo)) {
-    printf("Error setting variable information.\n");
-  }
-  
-  // Get fixed screen information
-  if (ioctl(fbfd, FBIOGET_FSCREENINFO, &finfo)) {
-    printf("Error reading fixed information.\n");
-  }
-
-  // map fb to user mem 
-  screensize = finfo.smem_len;
-  fbp = (char*)mmap(0, 
-                    screensize, 
-                    PROT_READ | PROT_WRITE, 
-                    MAP_SHARED, 
-                    fbfd, 
-                    0);
-
-  if ((int)fbp == -1) {
-    printf("Failed to mmap.\n");
-  }
-  else {
+    srand(time(NULL));
+    double start,end;
+    setup_chars();
+    setup_framebuffer();
     // drawing time...
     // create example data, 131072 1-byte samples
     u_int8_t *data = malloc(131072*sizeof(u_int8_t));
@@ -91,20 +87,13 @@ int main(int argc, char* argv[])
     draw_background(fbp, 1.234e-9);
     // noise is less than 13 units, so lets set the triggers at 114 and 142
     draw_rising_trigger(fbp,data,131072,32,224);
+	free(data);
     sleep(5);
-  }
 
-  // cleanup
-  munmap(fbp, screensize);
-  if (ioctl(fbfd, FBIOPUT_VSCREENINFO, &orig_vinfo)) {
-    printf("Error re-setting variable information.\n");
-  }
-  close(fbfd);
-  
-  // output refresh rate
-  printf("%.1fHz\n",(double)100/(end-start));
-  return 0;
-  
+  	cleanup_framebuffer();
+  	// output refresh rate
+  	printf("%.1fHz\n",(double)100/(end-start));
+  	return 0;
 }
 void display_ascii(char *fbp, char c, int x, int y)
 {
@@ -146,6 +135,19 @@ void draw_background(char *fbp, double t) {
     do {
         display_ascii(fbp, test_string_2[i], 10+i*CHAR_SPACING, 30);
     } while (test_string_2[++i] != '\0');
+	free(t_eng_notation);
+}
+u_int8_t *request_data(int data_len, int delay_usec) {
+	u_int16_t raw_data;
+	u_int8_t *data = malloc(data_len*sizeof(u_int8_t));
+	int i;
+	for (i=0; i<data_len; i++)
+	{
+		raw_data = GET_GPIO_ALL;
+		data[i] = ((raw_data >> 4) & 248) | ((raw_data >> 2) & 7);
+		if (delay_usec); usleep(delay_usec);
+	}
+	return data;
 }
 void draw_rising_trigger(char *fbp, u_int8_t *data, int data_len, u_int8_t trigger_low, u_int8_t trigger_high) {
     /* Trigger the signal based on an average of the times 
@@ -220,7 +222,95 @@ void draw_rising_trigger(char *fbp, u_int8_t *data, int data_len, u_int8_t trigg
             low = false;
         }
     }
+	free(linebuffer);
      
+}
+void setup_io()
+{
+	/* open /dev/mem */
+	if ((mem_fd = open("/dev/mem", O_RDWR|O_SYNC) ) < 0) {
+		printf("can't open /dev/mem \n");
+		exit(-1);
+	}
+
+	/* mmap GPIO */
+	gpio_map = mmap(
+	   NULL,             //Any adddress in our space will do
+	   BLOCK_SIZE,       //Map length
+	   PROT_READ|PROT_WRITE,// Enable reading & writting to mapped memory
+	   MAP_SHARED,       //Shared with other processes
+	   mem_fd,           //File to map
+	   GPIO_BASE         //Offset to GPIO peripheral
+	);
+
+	close(mem_fd); //No need to keep mem_fd open after mmap
+
+	if (gpio_map == MAP_FAILED) {
+		printf("mmap error %d\n", (int)gpio_map);//errno also set!
+		exit(-1);
+	}
+
+   // Always use volatile pointer!
+   gpio = (volatile unsigned *)gpio_map;
+   
+   // set inputs from ADC
+   for (g=2; g<= 4; g++) INP_GPIO(g);
+   for (g=7; g<=11; g++) INP_GPIO(g);
+
+}
+void setup_framebuffer() {
+  
+  long int screensize = 0;
+  // Open the file for reading and writing
+  fbfd = open("/dev/fb0", O_RDWR);
+  if (!fbfd) {
+    printf("Error: cannot open framebuffer device.\n");
+    return(1);
+  }
+  printf("The framebuffer device was opened successfully.\n");
+
+  // Get variable screen information
+  if (ioctl(fbfd, FBIOGET_VSCREENINFO, &vinfo)) {
+    printf("Error reading variable information.\n");
+  }
+  printf("Original %dx%d, %dbpp\n", vinfo.xres, vinfo.yres, 
+         vinfo.bits_per_pixel );
+
+  // Store for reset (copy vinfo to vinfo_orig)
+  memcpy(&orig_vinfo, &vinfo, sizeof(struct fb_var_screeninfo));
+
+  // Change variable info
+  vinfo.bits_per_pixel = 8;
+  if (ioctl(fbfd, FBIOPUT_VSCREENINFO, &vinfo)) {
+    printf("Error setting variable information.\n");
+  }
+  
+  // Get fixed screen information
+  if (ioctl(fbfd, FBIOGET_FSCREENINFO, &finfo)) {
+    printf("Error reading fixed information.\n");
+  }
+
+  // map fb to user mem 
+  screensize = finfo.smem_len;
+  fbp = (char*)mmap(0, 
+                    screensize, 
+                    PROT_READ | PROT_WRITE, 
+                    MAP_SHARED, 
+                    fbfd, 
+                    0);
+
+  if ((int)fbp == -1) {
+    printf("Failed to mmap.\n");
+	exit(1);
+  }
+}
+void cleanup_framebuffer() {
+	// cleanup
+  	munmap(fbp, screensize);
+  	if (ioctl(fbfd, FBIOPUT_VSCREENINFO, &orig_vinfo)) {
+    	printf("Error re-setting variable information.\n");
+  	}
+  	close(fbfd);
 }
 void setup_chars()
 {
