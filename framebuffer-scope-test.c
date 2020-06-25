@@ -178,7 +178,7 @@ void draw_rising_trigger(char *fbp, u_int8_t *data, int data_len, u_int8_t trigg
     u_int8_t *linebuffer = calloc(512,sizeof(u_int8_t)); // buffer of last value drawn to screen at this position
     // this means we can erase and write at the same position with minimal latency so that something is on the screen at all times
     for (i = 0; i < data_len; i++) {
-       // printf("i: %d, data: %d\n",i,data[i]);
+        printf("i: %d, data: %d\n",i,data[i]);
         if (data[i] > trigger_high) {
             if (!high) {
 
@@ -194,10 +194,10 @@ void draw_rising_trigger(char *fbp, u_int8_t *data, int data_len, u_int8_t trigg
                 else startval = trigger_marker - 256;
                 if (trigger_marker + 256 > data_len) endval = data_len-1;
                 else endval = trigger_marker + 256;
-               // printf("st: %d tr: %d en: %d\n",startval,trigger_marker,endval);
-               // sleep(1);
+                printf("st: %d tr: %d en: %d\n",startval,trigger_marker,endval);
+                sleep(1);
                 for (j = startval; j < endval; j++) {
-               //     printf("j: %d data: %d\n",j,data[j]);
+                //    printf("j: %d data: %d\n",j,data[j]);
                     // clear the pixel at this point in the linebuffer
                     fbp[308 + j - trigger_marker + (64+linebuffer[256+j-trigger_marker]) * finfo.line_length] = 0;
                     // set new pixel
