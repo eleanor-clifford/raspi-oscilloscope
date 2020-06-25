@@ -199,11 +199,11 @@ void draw_rising_trigger(char *fbp, u_int8_t *data, int data_len, u_int8_t trigg
                 for (j = startval; j < endval; j++) {
                 //    printf("j: %d data: %d\n",j,data[j]);
                     // clear the pixel at this point in the linebuffer
-                    // fbp[308 + j - trigger_marker + (64+linebuffer[256+j-trigger_marker]) * finfo.line_length] = 0;
+                    fbp[308 + j - trigger_marker + (64+linebuffer[256+j-trigger_marker]) * finfo.line_length] = 0;
                     // set new pixel
                     fbp[308 + j - trigger_marker + (64+data[j]) * finfo.line_length] = 1; // 308 = 52 + 256, 52 is zero point
                     // write into linebuffer at new position
-                    //linebuffer[256+j-trigger_marker] = data[j];
+                    linebuffer[256+j-trigger_marker] = data[j];
                 }
                 sleep(1); // wait to make sure it actually shows up
                 high = true; // now wait until below low
