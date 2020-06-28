@@ -1,10 +1,10 @@
-Name,Part,Purpose,Value,Cost
+Name,Part No.,Purpose,Value,Cost
 RPi,RPi 1A rev 2,Microprocessor,-,0+
-U1,ECS-220B-100,Clock generator,10 MHz,1.96
+U1,ECS-2200B-100,Clock generator,10 MHz,1.96
 U2,TLC5510INSR,ADC,20 MHz 8-bit parallel,5.38
 U3,OPA690,Op amp,5V min unipolar,3.01
-D1,NZX3V9C,ADC overvolt,4V,0.16
-D2,NZX5V1B,Op amp reverse/overvolt,3V,0.16
+D1,NZX3V9C,ADC overvolt protection,4V,0.16
+D2,NZX5V1B,Op amp reverse/overvolt protection,3V,0.16
 C1,-,Input coupling,100nF ceramic,0+
 C2,-,Analog bypass,100nF ceramic,0+
 C3,-,Digital bypass,100nF ceramic,0+
@@ -12,7 +12,7 @@ C4,-,Reference bypass,100nF ceramic,0+
 C5,-,Analog bypass,4.7uF electrolytic,0*
 C6,-,Digital bypass,4.7uF electrolytic,0*
 C7,-,Reference bypass,4.7uF electrolytic,0*
-POT1,-,Op amp gain (high),0-10k,0*
+SW1,"SR10010F-0106-20F0B-C7-N-0027 ",Op amp gain switch,SP6T,5.19
 R1,-,Op amp gain (low),470,0+
 R2,-,ADC reference (high),82,0+
 R3,-,ADC reference (low),330,0+
@@ -20,10 +20,17 @@ R4,-,Op amp bias (high),1.5k,0+
 R5,-,Op amp bias (low),1k,0+
 R6,-,Op amp input,47,0+
 R7,-,ADC input,47,0+
-A1,KYES70,SOIC-24 to DIP-24,-,13.49-
-A2,KYES70,SOIC-4 to DIP-4,-,-
-B1,PAD1,Circuit board,DIP 31x19,0+
-"","","","",24.16+
-*,scavenged,"","",""
-+,bought earlier,"","",""
--,includes extra components,"","",""
+R8,-,Op amp gain (10x),4k7,0+
+R9,-,Op amp gain (100x),47k,0+
+A1,-,ADC adapter,SOP-24 to DIP-24,1.67-
+A2,-,Op amp adapter,SOP-4 to DIP-4,1.52-
+B1,PAD1,Circuit board,DIP 31x19,3.42
+J1,1-1337543-0,Probe connector,BNC,1.15
+J2,-,Data header,1x8 2.54mm,2.69-
+J3,-,Analog power header,1x2 2.54mm,-
+-,CQ4LF,Flux,"Liquid, No-Clean",6.30
+-,CT2703,Probe,60MHz x1/x10,12.91
+"","","",Total,45.52
+*,scavenged,,VAT,7.93
++,bought earlier,,,
+-,includes extra components,,Grand Total,53.45
