@@ -4,14 +4,14 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
-Title ""
-Date ""
-Rev ""
+Title "Raspberry Pi oscilloscope ADC board"
+Date "2020-06-29"
+Rev "1"
 Comp ""
-Comment1 ""
-Comment2 ""
-Comment3 ""
-Comment4 ""
+Comment1 "Designed by Ellie Clifford"
+Comment2 "Output will saturate at 4Vpp input"
+Comment3 "Analog and digital power rails should ideally be isolated"
+Comment4 "Operates at 10Msps"
 $EndDescr
 $Comp
 L tlc5510:TLC5510INSR U2
