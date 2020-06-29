@@ -1,3 +1,4 @@
 (sym_lib_table
   (lib (name tlc5510)(type Legacy)(uri ${KIPRJMOD}/tlc5510.lib)(options "")(descr ""))
+  (lib (name sn74ls245n)(type Legacy)(uri ${KIPRJMOD}/sn74ls245n.lib)(options "")(descr ""))
 )

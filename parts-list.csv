@@ -3,6 +3,7 @@ RPi,RPi 1A rev 2,Microprocessor,-,0+
 U1,ECS-2200B-100,Clock generator,10 MHz,1.96
 U2,TLC5510INSR,ADC,20 MHz 8-bit parallel,5.38
 U3,OPA690,Op amp,5V min unipolar,3.01
+U4,SN74LS245N,Logic level converter,5V - 3V3,2.99
 D1,NZX3V9C,ADC overvolt protection,4V,0.16
 D2,NZX5V1B,Op amp reverse/overvolt protection,3V,0.16
 C1,-,Input coupling,100nF ceramic,0+
@@ -30,7 +31,7 @@ J2,-,Data header,1x8 2.54mm,2.69-
 J3,-,Analog power header,1x2 2.54mm,-
 -,CQ4LF,Flux,"Liquid, No-Clean",6.30
 -,CT2703,Probe,60MHz x1/x10,12.91
-"","","",Total,45.52
+,,,Total,45.52
 *,scavenged,,VAT,7.93
 +,bought earlier,,,
--,includes extra components,,Grand Total,53.45
+-,includes extra components,,Grand Total,56.44

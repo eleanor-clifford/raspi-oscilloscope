@@ -549,21 +549,7 @@ F 3 "" H 7700 3350 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	8000 3650 7450 3650
-Wire Wire Line
-	7450 3750 8000 3750
-Wire Wire Line
-	8000 3850 7450 3850
-Wire Wire Line
-	7450 3950 8000 3950
-Wire Wire Line
-	8000 4050 7450 4050
-Wire Wire Line
-	7450 4150 8000 4150
-Wire Wire Line
-	7450 4250 8000 4250
-Wire Wire Line
-	7450 4350 8000 4350
+	7450 3750 7850 3750
 $Comp
 L Connector:Conn_Coaxial J1
 U 1 1 5F01FB3A
@@ -623,19 +609,15 @@ Connection ~ 6300 3550
 $Comp
 L Connector:Conn_01x10_Male J2
 U 1 1 5EFDEB4A
-P 8200 4050
-F 0 "J2" H 8172 3932 50  0000 R CNN
-F 1 "Conn_01x10_Male" H 8172 4023 50  0000 R CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x10_P2.54mm_Vertical" H 8200 4050 50  0001 C CNN
-F 3 "~" H 8200 4050 50  0001 C CNN
-	1    8200 4050
+P 8750 4150
+F 0 "J2" H 8722 4032 50  0000 R CNN
+F 1 "Conn_01x10_Male" H 8722 4123 50  0000 R CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x10_P2.54mm_Vertical" H 8750 4150 50  0001 C CNN
+F 3 "~" H 8750 4150 50  0001 C CNN
+	1    8750 4150
 	-1   0    0    1   
 $EndComp
-Wire Wire Line
-	7450 4450 8000 4450
 Connection ~ 7450 4450
-Wire Wire Line
-	8000 3550 7700 3550
 Connection ~ 7700 3550
 $Comp
 L Switch:SW_SP6T SW1
@@ -723,4 +705,79 @@ $EndComp
 NoConn ~ 4800 4650
 NoConn ~ 4800 4750
 NoConn ~ 4800 4850
+Wire Wire Line
+	7850 3550 7800 3550
+Wire Wire Line
+	7850 3650 7450 3650
+Wire Wire Line
+	7850 3850 7450 3850
+Wire Wire Line
+	7450 4350 7850 4350
+Wire Wire Line
+	7450 4250 7850 4250
+Wire Wire Line
+	7450 4150 7850 4150
+Wire Wire Line
+	7850 4050 7450 4050
+Wire Wire Line
+	7450 3950 7850 3950
+Wire Wire Line
+	7450 4450 7750 4450
+$Comp
+L Interface:SN74LS245N U4
+U 1 1 5EFAA0A7
+P 8150 4000
+F 0 "U4" H 8150 4715 50  0000 C CNN
+F 1 "SN74LS245N" H 8150 4624 50  0000 C CNN
+F 2 "Package_DIP:DIP-20_W7.62mm" H 8150 4100 50  0001 C CNN
+F 3 "" H 8150 4100 50  0001 C CNN
+	1    8150 4000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7750 4450 7750 4600
+Connection ~ 7750 4450
+Wire Wire Line
+	7750 4450 7850 4450
+Wire Wire Line
+	8450 4450 8550 4450
+Wire Wire Line
+	8550 4350 8450 4350
+Wire Wire Line
+	8450 4250 8550 4250
+Wire Wire Line
+	8450 4150 8550 4150
+Wire Wire Line
+	8450 4050 8550 4050
+Wire Wire Line
+	8450 3950 8550 3950
+Wire Wire Line
+	8450 3850 8550 3850
+Wire Wire Line
+	8450 3750 8550 3750
+Wire Wire Line
+	8550 3650 8550 3550
+Wire Wire Line
+	8550 3550 8450 3550
+Wire Wire Line
+	7800 3550 7800 3300
+Wire Wire Line
+	7800 3300 8550 3300
+Wire Wire Line
+	8550 3300 8550 3550
+Connection ~ 7800 3550
+Wire Wire Line
+	7800 3550 7700 3550
+Connection ~ 8550 3550
+Wire Wire Line
+	8500 4600 8500 4550
+Wire Wire Line
+	8500 3650 8450 3650
+Wire Wire Line
+	8550 4550 8500 4550
+Connection ~ 8500 4550
+Wire Wire Line
+	8500 4550 8500 3650
+Wire Wire Line
+	8500 4600 7750 4600
 $EndSCHEMATC
