@@ -75,6 +75,7 @@ int main(int argc, char* argv[])
     srand(time(NULL));
     setup_chars();
     setup_framebuffer();
+    setup_io();
     // scope time...
     u_int8_t *data = malloc(512*sizeof(u_int8_t));
     int i,j;
