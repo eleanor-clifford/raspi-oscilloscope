@@ -67,27 +67,25 @@ void setup_framebuffer();
 void cleanup_framebuffer();
 char *fbp = 0;
 int fbfd = 0;
-u_int8_t *request_data(int data_len, int delay_usec);
+void request_data(int data_len, int delay_usec, u_int8_t *data);
 
 // application entry point
 int main(int argc, char* argv[])
 {
     srand(time(NULL));
-    double start,end;
     setup_chars();
     setup_framebuffer();
-    // drawing time...
-    // create example data, 131072 1-byte samples
-    u_int8_t *data = malloc(131072*sizeof(u_int8_t));
+    // scope time...
+    u_int8_t *data = malloc(512*sizeof(u_int8_t));
     int i,j;
-    // create some sample data with noise
-    for (i = 0; i < 131072; i++) data[i] = (u_int8_t) 128*(0.9*sin((double)i/100)+1 + ((double)rand()/RAND_MAX*0.2-0.1));
     // clear framebuffer
     for (i = 0; i < vinfo.yres*vinfo.xres; i++) fbp[i] = 0;
-    // draw background
-    draw_background(fbp, 1.234e-9);
-    // noise is less than 13 units, so lets set the triggers at 114 and 142
-    draw_rising_trigger(fbp,data,131072,32,224);
+    // scope
+	while (1) {
+		draw_background(fbp, 1.234e-9);
+		request_data(512,4,data);
+		draw_rising_trigger(fbp,data,512,32,224);
+	}
 	free(data);
     sleep(5);
 
@@ -138,9 +136,8 @@ void draw_background(char *fbp, double t) {
     } while (test_string_2[++i] != '\0');
 	free(t_eng_notation);
 }
-u_int8_t *request_data(int data_len, int delay_usec) {
+void request_data(int data_len, int delay_usec, u_int8_t *data) {
 	u_int16_t raw_data;
-	u_int8_t *data = malloc(data_len*sizeof(u_int8_t));
 	int i;
 	for (i=0; i<data_len; i++)
 	{
