@@ -205,6 +205,7 @@ void draw_rising_trigger(char *fbp, u_int8_t *data, int data_len, u_int8_t trigg
                     // write into linebuffer at new position
                     linebuffer[256+j-trigger_marker] = data[j];
                 }
+		draw_background(fbp,0);
                 usleep(10000); // wait to make sure it actually shows up
                 high = true; // now wait until below low
             }
