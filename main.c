@@ -72,21 +72,21 @@ void request_data(int data_len, int delay_usec, u_int8_t *data);
 // application entry point
 int main(int argc, char* argv[])
 {
-    //srand(time(NULL));
+    srand(time(NULL));
     setup_chars();
     setup_framebuffer();
     setup_io();
     // scope time...
     u_int8_t *data = malloc(512*sizeof(u_int8_t));
-    //int i,j;
-    // clear framebuffer
-    //for (i = 0; i < vinfo.yres*vinfo.xres; i++) fbp[i] = 0;
+    int i,j;
+    //clear framebuffer
+    for (i = 0; i < vinfo.yres*vinfo.xres; i++) fbp[i] = 0;
     // scope
 	while (1) {
-		//draw_background(fbp, 1.234e-9);
+		draw_background(fbp, 1.234e-9);
 		request_data(512,4,data);
-		//draw_rising_trigger(fbp,data,512,32,224);
-		printf("%x\n",data[256]);
+		draw_rising_trigger(fbp,data,512,32,224);
+		//printf("%x\n",data[256]);
 	}
 	free(data);
   //  sleep(5);
