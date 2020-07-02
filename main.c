@@ -79,8 +79,7 @@ int main(int argc, char* argv[])
     setup_io();
     // scope time...
     u_int8_t *data = malloc(512*sizeof(u_int8_t));
-    int i,j;
-    clear_framebuffer();
+    clear_framebuffer(fbp);
     // scope
 	while (1) {
 		draw_background(fbp, 1.234e-9);
@@ -102,6 +101,7 @@ void display_ascii(char *fbp, char c, int x, int y)
     }
 }
 void clear_framebuffer(char *fbp) {
+	int i;
 	for (i = 0; i < vinfo.yres*vinfo.xres; i++) fbp[i] = 0;
 }
 void draw_background(char *fbp, double t) {
@@ -210,7 +210,7 @@ void draw_rising_trigger(char *fbp, u_int8_t *data, int data_len, u_int8_t trigg
                 }
                 usleep(10000); // wait to make sure it actually shows up
 				// just for debugging
-				clear_framebuffer();
+				clear_framebuffer(fbp);
 
 				draw_background(fbp,0);
                 high = true; // now wait until below low
