@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
 	while (1) {
 		draw_background(fbp, 1.234e-9);
 		request_data(512,0,data);
-		draw_rising_trigger(fbp,data,512,64,176);
+		draw_rising_trigger(fbp,data,512,16,240);
 		//printf("%x\n",data[256]);
 	}
 	free(data);
@@ -207,7 +207,7 @@ void draw_rising_trigger(char *fbp, u_int8_t *data, int data_len, u_int8_t trigg
                     // write into linebuffer at new position
                     linebuffer[256+j-trigger_marker] = data[j];
                 }
-                usleep(10000); // wait to make sure it actually shows up
+                usleep(100000); // wait to make sure it actually shows up
 				// just for debugging
 				clear_framebuffer(fbp);
 
