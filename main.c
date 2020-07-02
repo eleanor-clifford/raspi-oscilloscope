@@ -148,7 +148,6 @@ void request_data(int data_len, int delay_usec, u_int8_t *data) {
 		data[i] = ((raw_data >> 4) & 248) | ((raw_data >> 2) & 7);
 		if (delay_usec) usleep(delay_usec);
 	}
-	return data;
 }
 void draw_rising_trigger(char *fbp, u_int8_t *data, int data_len, u_int8_t trigger_low, u_int8_t trigger_high) {
     /* Trigger the signal based on an average of the times 
