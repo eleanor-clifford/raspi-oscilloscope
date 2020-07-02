@@ -57,6 +57,7 @@ const unsigned char *ascii_characters[256];	// Store the ASCII character set, bu
 struct fb_var_screeninfo orig_vinfo;
 struct fb_var_screeninfo vinfo;
 struct fb_fix_screeninfo finfo;
+long int screensize;
 void setup_chars();
 void display_ascii(char *fbp, char c, int x, int y);
 void draw_background(char *fbp, double t);
@@ -145,7 +146,7 @@ u_int8_t *request_data(int data_len, int delay_usec) {
 	{
 		raw_data = GET_GPIO_ALL;
 		data[i] = ((raw_data >> 4) & 248) | ((raw_data >> 2) & 7);
-		if (delay_usec); usleep(delay_usec);
+		if (delay_usec) usleep(delay_usec);
 	}
 	return data;
 }
@@ -254,18 +255,19 @@ void setup_io()
    gpio = (volatile unsigned *)gpio_map;
    
    // set inputs from ADC
+   int g;
    for (g=2; g<= 4; g++) INP_GPIO(g);
    for (g=7; g<=11; g++) INP_GPIO(g);
 
 }
 void setup_framebuffer() {
   
-  long int screensize = 0;
+  screensize = 0;
   // Open the file for reading and writing
   fbfd = open("/dev/fb0", O_RDWR);
   if (!fbfd) {
     printf("Error: cannot open framebuffer device.\n");
-    return(1);
+    exit(1);
   }
   printf("The framebuffer device was opened successfully.\n");
 
