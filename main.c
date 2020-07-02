@@ -60,6 +60,7 @@ struct fb_fix_screeninfo finfo;
 long int screensize;
 void setup_chars();
 void display_ascii(char *fbp, char c, int x, int y);
+void clear_framebuffer(char *fbp);
 void draw_background(char *fbp, double t);
 void draw_rising_trigger(char *fbp, u_int8_t *data, int data_len, u_int8_t trigger_low, u_int8_t trigger_high);
 void setup_io();
@@ -79,8 +80,7 @@ int main(int argc, char* argv[])
     // scope time...
     u_int8_t *data = malloc(512*sizeof(u_int8_t));
     int i,j;
-    //clear framebuffer
-    for (i = 0; i < vinfo.yres*vinfo.xres; i++) fbp[i] = 0;
+    clear_framebuffer();
     // scope
 	while (1) {
 		draw_background(fbp, 1.234e-9);
@@ -100,6 +100,9 @@ void display_ascii(char *fbp, char c, int x, int y)
     for (yi = 0; yi < CHAR_HEIGHT; yi++) {
         memcpy((char*)(fbp + x + (y+yi)*finfo.line_length),(char*)(ascii_characters[c] + CHAR_WIDTH*yi),CHAR_WIDTH*sizeof(u_int8_t));
     }
+}
+void clear_framebuffer(char *fbp) {
+	for (i = 0; i < vinfo.yres*vinfo.xres; i++) fbp[i] = 0;
 }
 void draw_background(char *fbp, double t) {
     // create fixed background grid
@@ -205,8 +208,11 @@ void draw_rising_trigger(char *fbp, u_int8_t *data, int data_len, u_int8_t trigg
                     // write into linebuffer at new position
                     linebuffer[256+j-trigger_marker] = data[j];
                 }
-		draw_background(fbp,0);
-                usleep(10000); // wait to make sure it actually shows up
+                usleep(1000); // wait to make sure it actually shows up
+				// just for debugging
+				clear_framebuffer();
+
+				draw_background(fbp,0);
                 high = true; // now wait until below low
             }
         }
