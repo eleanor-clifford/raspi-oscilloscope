@@ -90,8 +90,6 @@ int main(int argc, char* argv[])
     sleep(5);
 
   	cleanup_framebuffer();
-  	// output refresh rate
-  	printf("%.1fHz\n",(double)100/(end-start));
   	return 0;
 }
 void display_ascii(char *fbp, char c, int x, int y)
